@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=YTDugem
+Comment=Your music. Your space.
+Exec=ytdugem
+Icon=in.ytdugem.desktop
+Terminal=false
+Categories=AudioVideo;Audio;Player;
+StartupWMClass=in.ytdugem.desktop

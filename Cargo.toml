@@ -1,0 +1,57 @@
+[package]
+name = "ytdugem"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-only"
+description = "YTDugem music player, a native Rust desktop rewrite of BitChord"
+repository = "https://github.com/TazakiN/YTDugem"
+homepage = "https://github.com/TazakiN/YTDugem"
+readme = "README.md"
+keywords = ["music-player", "youtube-music", "egui", "lyrics", "desktop"]
+categories = ["multimedia::audio", "gui"]
+publish = false
+rust-version = "1.95"
+
+[workspace]
+members = [".", "xtask"]
+default-members = ["."]
+
+[dependencies]
+anyhow = "1"
+eframe = { version = "0.37", default-features = false, features = ["default_fonts", "glow", "x11", "wayland"] }
+# Only its font bytes and glyph constants are used: it targets egui 0.36, not 0.37.
+egui-phosphor = { version = "=0.14.0", default-features = false, features = ["regular", "fill"] }
+egui_extras = { version = "0.37", default-features = false, features = ["http", "image"] }
+skrifa = "0.44"
+image = { version = "0.25", default-features = false, features = ["png", "jpeg", "webp"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "json", "rustls-tls"] }
+directories = "6"
+rand = "0.10"
+souvlaki = { version = "0.9.3", default-features = false, features = ["use_zbus"] }
+sha1 = "0.10"
+hmac = "0.12"
+sha2 = "0.10"
+# The saved sign-in is sealed under a key the system credential store holds (Meiro `secretfile`).
+aes-gcm = "0.11.1"
+base64 = "0.23"
+tungstenite = { version = "0.30", default-features = false, features = ["handshake"] }
+
+[profile.release]
+strip = true
+lto = "thin"
+
+[build-dependencies]
+embed-resource = "3.0"
+
+[target.'cfg(windows)'.dependencies]
+raw-window-handle = "0.6"
+# Windows notification-area icon and its menu (upstream `DesktopTrayMenu`).
+tray-icon = { version = "=0.26.1", default-features = false }
+# Close-to-tray: drop the taskbar button while the window stays (minimized) alive.
+windows-sys = { version = "0.61", features = ["Win32_Foundation", "Win32_Globalization", "Win32_Security_Credentials", "Win32_UI_WindowsAndMessaging"] }
+
+# `cargo run` stays responsive: image decoding, egui and TLS run optimized even in debug builds.
+[profile.dev.package."*"]
+opt-level = 3

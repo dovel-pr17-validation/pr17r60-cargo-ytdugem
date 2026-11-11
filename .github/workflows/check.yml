@@ -1,0 +1,48 @@
+name: Rust desktop
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --locked -- -D warnings
+      - run: cargo test --workspace --locked
+      - run: cargo build --release --locked
+      - name: Check Windows packaging selection and extraction commands
+        run: python scripts/test-package-windows.py
+      - name: Package Windows audio tools
+        if: runner.os == 'Windows'
+        env:
+          SEVENZIP: 'C:\Program Files\7-Zip\7z.exe'
+        run: python scripts/package-windows.py
+      - name: Test extracted Windows package playback without installed tools
+        if: runner.os == 'Windows'
+        run: ./scripts/windows-playback-smoke.ps1
+      - uses: actions/upload-artifact@v7
+        if: runner.os == 'Windows'
+        with:
+          name: YTDugem-windows-x86_64
+          path: dist/YTDugem-windows-x86_64.zip
